@@ -45,3 +45,6 @@ hxmetrics.listUris();
 
 You can enable debug mode with `hxmetrics.debug = true` which will cause hxMetrics to print out every function it's monitoring to help target your uris to the right pieces of code.
 
+## License
+
+See COPYING.txt for the GNU GENERAL PUBLIC LICENSE
