@@ -10,7 +10,7 @@ var hxmetrics = require('hxmetrics');
 var uri = 'node_modules/mysql/lib/Connection.js:exports.prototype.query';
 hxmetrics.watch(uri, function(funcUri, type, params, duration) {
 
-  // Send data off to your preferred dashboard/tracking/monitoring tool tracking here
+  // Send data off to your preferred dashboard/tracking/monitoring tool here
 
 });
 ```
