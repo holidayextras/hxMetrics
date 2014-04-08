@@ -39,7 +39,7 @@ metrics.watch = function(url, callback) {
   return metrics._findModules(path, file, callback, metrics._topLevelModule, [ ], [ ]);
 };
 
-metrics.listVectors = function() {
+metrics.listUris = function() {
   metrics.watch('1234567890');
 };
 

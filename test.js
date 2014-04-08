@@ -65,18 +65,18 @@ module.exports = {
       metrics.watch('');
     },
   },
-  'testing listVectors': {
-    'to list vectors': function(done) {
+  'testing listUris': {
+    'to list uris': function(done) {
       metrics.watch = function(number) {
         assert.equal(number, '1234567890');
         done();
       };
-      metrics.listVectors();
+      metrics.listUris();
     },
   },
   'testing _findModules': {
     'full test': function(done) {
-      var mod = 
+      var mod =
         { filename: 'foo1', exports: { }, children: [
           { filename: 'foo2', exports: { }, children: [
             { filename: 'bar3', exports: { }, children: [ ] },
@@ -158,7 +158,7 @@ module.exports = {
       metrics._findFunctions = function(path, cb, item, prop) {
         if (['prototype', 'sampleProperty'].indexOf(prop) === -1) throw new Error('nope');
       };
-      metrics._infectFunction = function(cb, item, prop, funcUri, seen, infected) { 
+      metrics._infectFunction = function(cb, item, prop, funcUri, seen, infected) {
         assert.equal(callback, cb);
         assert.equal(item, obj);
         assert.equal(prop, 'foo');
@@ -244,12 +244,12 @@ module.exports = {
         'funcUri',
         { returned: false, argInvoked: 2 },
         { input: [ 1, 2, callback ], output: [ 'test' ] },
-        'timediff' 
+        'timediff'
       ], [
         'funcUri',
         { returned: true, argInvoked: null },
         { input: [ 1, 2, callback ], output: [ 'foobar' ] },
-        'timediff' 
+        'timediff'
       ] ] );
     },
   },
@@ -424,7 +424,7 @@ module.exports = {
     };
     var result = test.asyncFunction(6, cb)
     assert.equal(result, 5);
-    
+
     // console.log(args);
     assert.deepEqual(args[0]["0"], "test.js:exports.cons.staticFunction");
     assert.deepEqual(args[0]["1"], { "returned": true, "argInvoked": null });

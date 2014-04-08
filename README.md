@@ -1,5 +1,8 @@
 # hxMetrics
 
+This is a NodeJS module that allows you to reach inside any other module, without needing a reference, and instrument it's functions to facilitate custom metrics and logging.
+
+
 ## Sample usage:
 ```
 var hxmetrics = require('hxmetrics');
@@ -14,7 +17,7 @@ hxmetrics.watch(uri, function(funcUri, type, params, duration) {
 
 The first parameter is a uri taking the form of `path/to/file.js:exports.path.to.function`. You can use regexp characters to target specific paths.
 
-`js/*/myFile.js:exports.MyClass.prototype.` will match any file named `myFile.js` in any folder within `js`, and will watch any functions attached to `MyClass.prorotype`.
+`js/*/myFile.js:exports.MyClass.prototype.` will match any file named `myFile.js` in any folder within `js`, and will watch any functions attached to `MyClass.prototype`.
 
 `js/*/myFile.js:exports.MyClass$` will match any file named `myFile.js` in any folder within `js`, but will only watch the constructor function.
 
@@ -34,11 +37,11 @@ The callback is invoked with the following params:
 ```
 In addition, `this` within the callback is the object on which the traced function is attached to.
 
-It's possible to list all the vectors within a project:
+It's possible to list all the uris within a project:
 ```
-hxmetrics.listVectors();
+hxmetrics.listUris();
 ```
 ...be prepared for a lot of console output!
 
-You can enable debug mode with `hxmetrics.debug = true` which will cause hxMetrics to print out every function it's monitoring to help target your uri's to the right pieces of code.
+You can enable debug mode with `hxmetrics.debug = true` which will cause hxMetrics to print out every function it's monitoring to help target your uris to the right pieces of code.
 
