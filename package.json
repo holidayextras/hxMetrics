@@ -1,0 +1,18 @@
+{
+  "name": "hxmetrics",
+  "description": "instrument other modules without touching their source code",
+  "version": "1.0.0",
+  "keywords": [
+    "metrics",
+    "performance",
+    "timing",
+    "instrument"
+  ],
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/holidayextras/hxMetrics"
+  },
+  "main": "./metrics.js",
+  "license": "GPL"
+}
