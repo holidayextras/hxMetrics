@@ -232,6 +232,7 @@ module.exports = {
       var args = [ ];
       metrics._infectFunction(function() {
         args.push(Array.prototype.slice.call(arguments));
+        assert.ok(this == obj);
       }, obj, 'func', 'funcUri', [ ], [ ]);
 
       var callback = function(result) {

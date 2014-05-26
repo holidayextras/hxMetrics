@@ -92,17 +92,18 @@ metrics._infectFunction = function(clback, item, prop, funcUri, seen, infected) 
     return (function() {
       var functionInvokedAt = metrics._meaningfulTime();
       var functionArgs = Array.prototype.slice.call(arguments);
+      var self = this;
 
       var newFunctionArgs = functionArgs.map(function(arg) {
         if (!(arg instanceof Function)) return arg;
         return function() {
-          metrics._emitData(clback, item, funcUri, functionArgs.indexOf(arg), functionArgs, Array.prototype.slice.call(arguments), metrics._timeDiff(metrics._meaningfulTime(), functionInvokedAt));
+          metrics._emitData(clback, self, funcUri, functionArgs.indexOf(arg), functionArgs, Array.prototype.slice.call(arguments), metrics._timeDiff(metrics._meaningfulTime(), functionInvokedAt));
           return arg.apply(this, Array.prototype.slice.call(arguments));
         };
       });
 
-      var out = original.apply(this, newFunctionArgs);
-      metrics._emitData(clback, item, funcUri, true, functionArgs, [ out ], metrics._timeDiff(metrics._meaningfulTime(), functionInvokedAt));
+      var out = original.apply(self, newFunctionArgs);
+      metrics._emitData(clback, self, funcUri, true, functionArgs, [ out ], metrics._timeDiff(metrics._meaningfulTime(), functionInvokedAt));
       return out;
     }).apply(this, Array.prototype.slice.call(arguments));
   };
