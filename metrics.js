@@ -17,15 +17,32 @@ You should have received a copy of the GNU General Public License
 along with hxMetrics.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+( function() {
+
 var metrics = { };
-module.exports = metrics;
+var moduleRef = (typeof module != 'undefined') ? module : null;
+
+if (moduleRef) {
+  module.exports = metrics;
+} else {
+  window.hxMetrics = metrics;
+}
 
 metrics.debug = false;
-var topLevelModule = module;
+var topLevelModule = moduleRef || { children: [ ] };
 while (topLevelModule.parent) topLevelModule = topLevelModule.parent;
-topLevelModule.children.push({ filename: 'http.js', exports: require('http') });
-topLevelModule.children.push({ filename: 'https.js', exports: require('https') });
-topLevelModule.children.push({ filename: 'fs.js', exports: require('fs') });
+
+if (moduleRef) {
+  topLevelModule.children.push({ filename: 'http.js', exports: require('http') });
+  topLevelModule.children.push({ filename: 'https.js', exports: require('https') });
+  topLevelModule.children.push({ filename: 'fs.js', exports: require('fs') });
+} else {
+  Object.keys(window).forEach(function(i) {
+    if ([ 'top', 'document', 'window', 'worker', 'parent', 'frames', 'self', 'performance', 'navigator' ].indexOf(i) === -1) {
+      topLevelModule.children.push({ filename: i, exports: window[i] });
+    }
+  });
+}
 metrics._topLevelModule = topLevelModule;
 
 metrics.watch = function(url, callback) {
@@ -33,9 +50,14 @@ metrics.watch = function(url, callback) {
   var file = '';
   if ((typeof url == 'string') && (url != '1234567890')) {
     file = url.split(':')[0];
+    if (!moduleRef) {
+      file = file.replace(/\$/, '\\$');
+      url = url.replace(/\$/, '\\$');
+    }
     file = new RegExp(file.replace(/\./g, '\\.').replace(/\*/g, '.*?'));
     path = new RegExp(url.replace(/\./g, '\\.').replace(/\*/g, '.*?'));
   }
+  if (url == '1234567890') path = url;
   return metrics._findModules(path, file, callback, metrics._topLevelModule, [ ], [ ]);
 };
 
@@ -46,11 +68,13 @@ metrics.listUris = function() {
 metrics._findModules = function(path, file, callback, mod, seen, infected) {
   if (seen.indexOf(mod) !== -1) return;
   seen.push(mod);
+
   if (mod.children) {
     mod.children.map(function(child) {
       metrics._findModules(path, file, callback, child, seen, infected);
     });
   }
+
   if (mod.exports && mod.filename.match(file) && (!mod.filename.toLowerCase().match('hxmetrics/metrics.js'))) {
     metrics._findFunctions(path, callback, mod, 'exports', mod.filename+':exports', seen, infected);
   }
@@ -58,9 +82,14 @@ metrics._findModules = function(path, file, callback, mod, seen, infected) {
 
 metrics._findFunctions = function(path, callback, item, prop, funcUri, seen, infected) {
   if (!item.hasOwnProperty(prop) || Object.getOwnPropertyDescriptor(item, prop).get) return;
+
   var original = item[prop];
   if (seen.indexOf(original) !== -1) return;
-  if (funcUri.split(':')[1].split('.').length > 4) return;
+
+  var funcPath = funcUri.split(':');
+  funcPath.shift();
+  if (funcPath.join().split('.').length > 5) return;
+
   seen.push(original);
   if (item[prop] instanceof Function) {
     if (funcUri.match(path)) {
@@ -139,6 +168,12 @@ metrics._timeDiff = function(newest, oldest) {
 };
 
 metrics._meaningfulTime = function() {
+  if (!moduleRef) {
+    return performance.now().toFixed(2)+'ms';
+  }
+
   var parts = process.hrtime();
   return (((parts[0]*1000)+(parts[1]/1000000))%10000).toFixed(2) + 'ms';
 };
+
+})();
