@@ -38,7 +38,7 @@ if (moduleRef) {
   topLevelModule.children.push({ filename: 'fs.js', exports: require('fs') });
 } else {
   Object.keys(window).forEach(function(i) {
-    if ([ 'top', 'document', 'window', 'worker', 'parent', 'frames', 'self', 'performance', 'navigator' ].indexOf(i) === -1) {
+    if ([ 'top', 'document', 'window', 'worker', 'parent', 'frames', 'self', 'performance', 'navigator', 'hxMetrics' ].indexOf(i) === -1) {
       topLevelModule.children.push({ filename: i, exports: window[i] });
     }
   });
@@ -88,7 +88,7 @@ metrics._findFunctions = function(path, callback, item, prop, funcUri, seen, inf
 
   var funcPath = funcUri.split(':');
   funcPath.shift();
-  if (funcPath.join().split('.').length > 5) return;
+  if (funcPath.join().split('.').length > 6) return;
 
   seen.push(original);
   if (item[prop] instanceof Function) {
