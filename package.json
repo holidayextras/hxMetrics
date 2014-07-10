@@ -1,14 +1,13 @@
 {
   "name": "hxmetrics",
   "description": "instrument other modules without touching their source code",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "keywords": [
     "metrics",
     "performance",
     "timing",
     "instrument"
   ],
-  "version": "1.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/holidayextras/hxMetrics"
