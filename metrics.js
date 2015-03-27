@@ -45,6 +45,8 @@ if (moduleRef) {
 }
 metrics._topLevelModule = topLevelModule;
 
+var batch = { };
+
 metrics.watch = function(url, callback) {
   var path = '';
   var file = '';
@@ -54,33 +56,41 @@ metrics.watch = function(url, callback) {
       file = file.replace(/\$/, '\\$');
       url = url.replace(/\$/, '\\$');
     }
-    file = new RegExp(file.replace(/\./g, '\\.').replace(/\*/g, '.*?'));
+    file = file.replace(/\./g, '\\.').replace(/\*/g, '.*?');
     path = new RegExp(url.replace(/\./g, '\\.').replace(/\*/g, '.*?'));
   }
   if (url == '1234567890') path = url;
-  return metrics._findModules(path, file, callback, metrics._topLevelModule, [ ], [ ]);
+
+  batch[file] = batch[file] || [ ];
+  batch[file].push({ path: path, callback: callback });
 };
 
 metrics.listUris = function() {
   metrics.watch('1234567890');
 };
 
-metrics._findModules = function(path, file, callback, mod, seen, infected) {
+metrics.execute = function() {
+  return metrics._findModules(metrics._topLevelModule, [ ], [ ]);
+};
+
+metrics._findModules = function(mod, seen, infected) {
   if (seen.indexOf(mod) !== -1) return;
   seen.push(mod);
 
   if (mod.children) {
     mod.children.map(function(child) {
-      metrics._findModules(path, file, callback, child, seen, infected);
+      metrics._findModules(child, seen, infected);
     });
   }
 
-  if (mod.exports && mod.filename.match(file) && (!mod.filename.toLowerCase().match('hxmetrics/metrics.js'))) {
-    metrics._findFunctions(path, callback, mod, 'exports', mod.filename+':exports', seen, infected);
-  }
+  Object.keys(batch).forEach(function(i) {
+    if (mod.exports && mod.filename.match(new RegExp(i)) && (!mod.filename.toLowerCase().match('hxmetrics/metrics.js'))) {
+      metrics._findFunctions(batch[i], mod, 'exports', mod.filename+':exports', seen, infected);
+    }
+  });
 };
 
-metrics._findFunctions = function(path, callback, item, prop, funcUri, seen, infected) {
+metrics._findFunctions = function(paths, item, prop, funcUri, seen, infected) {
   if (!item.hasOwnProperty(prop) || Object.getOwnPropertyDescriptor(item, prop).get) return;
 
   var original = item[prop];
@@ -89,24 +99,27 @@ metrics._findFunctions = function(path, callback, item, prop, funcUri, seen, inf
   var funcPath = funcUri.split(':');
   funcPath.shift();
   if (funcPath.join().split('.').length > 6) return;
-
+  if (item[prop] instanceof Buffer) return item;
   seen.push(original);
   if (item[prop] instanceof Function) {
-    if (funcUri.match(path)) {
-      metrics._infectFunction(callback, item, prop, funcUri, seen, infected);
-      for (var i in original) {
-        if (!original.hasOwnProperty(i) || Object.getOwnPropertyDescriptor(original, i).get) continue;
-        item[prop][i] = original[i];
+    paths.forEach(function(entry) {
+      var path = entry.path;
+      if (funcUri.match(path)) {
+        metrics._infectFunction(entry.callback, item, prop, funcUri, seen, infected);
+        for (var i in original) {
+          if (!original.hasOwnProperty(i) || Object.getOwnPropertyDescriptor(original, i).get) continue;
+          item[prop][i] = original[i];
+        }
       }
-    }
-    if (path == '1234567890') console.log(funcUri);
+      if (path == '1234567890') console.log(funcUri);
+    });
     if (item[prop].prototype) {
-      metrics._findFunctions(path, callback, item[prop], 'prototype', funcUri+'.prototype', seen, infected);
+      metrics._findFunctions(paths, item[prop], 'prototype', funcUri+'.prototype', seen, infected);
     }
   }
   if (item[prop] instanceof Object) {
     for (var j in item[prop]) {
-      metrics._findFunctions(path, callback, item[prop], j, funcUri+'.'+j, seen, infected);
+      metrics._findFunctions(paths, item[prop], j, funcUri+'.'+j, seen, infected);
     }
   }
   return item;

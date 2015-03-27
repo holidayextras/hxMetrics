@@ -13,6 +13,8 @@ hxmetrics.watch(uri, function(funcUri, type, params, duration) {
   // Send data off to your preferred dashboard/tracking/monitoring tool here
 
 });
+
+hxmetrics.execute() // Perform a single pass, actioning all requested watches
 ```
 
 The first parameter is a uri taking the form of `path/to/file.js:exports.path.to.function`. You can use regexp characters to target specific paths.
